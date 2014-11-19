@@ -55,7 +55,7 @@ namespace CollaborativeFiltering
                 content = file_text.Split(',');
 
                 u = new User(Convert.ToInt32(content[0]), users.Count);
-                AddUser(users, u);
+                u.ID = AddUser(users, u);
 
                 new_movie.Add(u, Convert.ToInt32(content[1]));
             }
@@ -79,35 +79,33 @@ namespace CollaborativeFiltering
             return path;
         }
 
-        private static void AddUser(LinkedList<User> users, User u)
+        private static int AddUser(LinkedList<User> users, User u)
         {
             LinkedListNode<User> current;
 
             if (users.Count == 0)
             {
                 users.AddFirst(u);
-                return;
+                return 0;
             }
 
             current = users.First;
-            while (current != users.Last)
+            while (current.Next != null)
             {
                 // User not added if already present
-                if (current.Value.Equals(u))
-                    return;
+                if (current.Value.NetflixID == u.NetflixID)
+                    return current.Value.ID;
 
                 if (current.Value.NetflixID > u.NetflixID)
                 {
                     users.AddBefore(current, u);
-                    return;
+                    return u.ID;
                 }
                 current = current.Next;
             }
 
-            if (current.Value.NetflixID > u.NetflixID)
-                users.AddBefore(current, u);
-            else
-                users.AddLast(u);
+            users.AddLast(u);
+            return u.ID;
         }
     }
 }

@@ -10,7 +10,7 @@ namespace CollaborativeFiltering
     {
         public int NetflixID { get; private set; }
 
-        public int ID { get; private set; }
+        public int ID { get; set; }
 
         public User(int netflixID, int id)
             : this()
