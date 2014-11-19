@@ -17,10 +17,11 @@ namespace CollaborativeFiltering
             users = new LinkedList<User>();
             movies = new Dictionary<User, int>[movie_count];
 
-            path = "training_set/mv_00";
+//            path = "training_set/mv_00";
             for (int i = 1; i <= movie_count; i++)
             {
-                movies[i - 1] = ParseSingle(path + FillMovieNumber(i), users);
+                path = String.Format(@"training_set\mv_{0:0000000}.txt", i);
+                movies[i - 1] = ParseSingle(path, users);
             }
             // A path is like this:
             //path = "training_set/mv_0017770.txt";

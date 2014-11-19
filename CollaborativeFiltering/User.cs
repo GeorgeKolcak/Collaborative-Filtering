@@ -12,8 +12,6 @@ namespace CollaborativeFiltering
 
         public int ID { get; private set; }
 
-        private User() { }
-
         public User(int netflixID, int id)
             : this()
         {

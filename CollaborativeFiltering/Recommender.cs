@@ -8,31 +8,111 @@ namespace CollaborativeFiltering
 {
     class Recommender
     {
+        private Random random = new Random();
+
         private int featureCount;
+
+        private int movieCount;
+        private int userCount;
 
         private double[,] aMatrix;
         private double[,] bMatrix;
 
-        public Recommender(int featureCount)
+        private double ni;
+        private double lambda;
+
+        public Recommender(int featureCount, double ni, double lambda = 0.0)
         {
             this.featureCount = featureCount;
+
+            this.ni = ni;
+            this.lambda = lambda;
         }
 
-        public void Learn()
+        public void Learn(Dictionary<User, double>[] trainingData, int userCount)
         {
+            movieCount = trainingData.Length;
+            this.userCount = userCount;
 
+            aMatrix = new double[userCount, featureCount];
+
+            for (int i = 0; i < userCount; i++)
+            {
+                for (int j = 0; j < featureCount; j++)
+                {
+                    aMatrix[i, j] = random.NextDouble();
+                }
+            }
+
+            bMatrix = new double[featureCount, movieCount];
+
+            for (int i = 0; i < featureCount; i++)
+            {
+                for (int j = 0; j < movieCount; j++)
+                {
+                    bMatrix[i, j] = random.NextDouble();
+                }
+            }
+
+            double oldError = Double.MaxValue;
+            double error = 0.0;
+
+            for (int i = 0; i < movieCount; i++)
+            {
+                foreach (User user in trainingData[i].Keys)
+                {
+                    error += Math.Pow((trainingData[i][user] - KSum(user.ID, i)), 2);
+                }
+            }
+
+            while (error < oldError)
+            {
+                oldError = error;
+                error = 0.0;
+
+                for (int i = 0; i < movieCount; i++)
+                {
+                    foreach (User u in trainingData[i].Keys)
+                    {
+                        error += Math.Pow((trainingData[i][u] - KSum(u.ID, i)), 2);
+                    }
+                }
+
+                int movieID = random.Next(movieCount);
+                User user = trainingData[movieID].Keys.ElementAt(random.Next(trainingData[movieID].Count));
+
+                double[] tempAData = new double[featureCount];
+                double[] tempBData = new double[featureCount];
+
+                for (int k = 0; k < featureCount; k++)
+                {
+                    tempAData[k] = (((1 - lambda) * aMatrix[user.ID, k]) + (ni * bMatrix[k, movieID] * (trainingData[movieID][user] - KSum(user.ID, movieID))));
+                    tempBData[k] = (((1 - lambda) * bMatrix[k, movieID]) + (ni * aMatrix[user.ID, k] * (trainingData[movieID][user] - KSum(user.ID, movieID))));
+                }
+
+                for (int k = 0; k < featureCount; k++)
+                {
+                    aMatrix[user.ID, k] = tempAData[k];
+                    bMatrix[k, movieID] = tempBData[k];
+                }
+            }
         }
 
-        public int PredictRating(int userID, int movieID)
+        public double PredictRating(int userID, int movieID)
         {
-            double rating = 0;
+            return KSum(userID, movieID);
+        }
+
+        private double KSum(int userID, int movieID)
+        {
+            double sum = 0;
 
             for (int k = 0; k < featureCount; k++)
             {
-                rating += (aMatrix[userID, k] * bMatrix[k, movieID]);
+                sum += (aMatrix[userID, k] * bMatrix[k, movieID]);
             }
 
-            return (int)Math.Round(rating);
+            return sum;
         }
     }
 }
