@@ -8,14 +8,13 @@ namespace CollaborativeFiltering
 {
     static class Parser
     {
-        public static Dictionary<User, int>[] Parse(int movie_count, out int user_count)
+        public static Dictionary<int, int>[] Parse(int movie_count, out Dictionary<int, int> users)
         {
             string path;
-            LinkedList<User> users;
-            Dictionary<User, int>[] movies;
+            users = new Dictionary<int, int>();
+            Dictionary<int, int>[] movies;
 
-            users = new LinkedList<User>();
-            movies = new Dictionary<User, int>[movie_count];
+            movies = new Dictionary<int, int>[movie_count];
 
 //            path = "training_set/mv_00";
             for (int i = 1; i <= movie_count; i++)
@@ -26,40 +25,43 @@ namespace CollaborativeFiltering
             // A path is like this:
             //path = "training_set/mv_0017770.txt";
 
-            user_count = users.Count;
             return movies;
         }
 
-        private static Dictionary<User, int> ParseSingle(string path, LinkedList<User> users)
+        private static Dictionary<int, int> ParseSingle(string path, Dictionary<int, int> users)
         {
             string file_text;
             string[] content;
-            User u;
-            Dictionary<User, int> new_movie;
+            Dictionary<int, int> new_movie;
 
-            new_movie = new Dictionary<User, int>();
+            new_movie = new Dictionary<int, int>();
 
 
             // Read the file as one string.
-            System.IO.StreamReader myFile = new System.IO.StreamReader(path);
-
-            // Scrapping the first line as it holds no interest (just the movie id, which we already have)
-            myFile.ReadLine();
-
-            while (myFile.EndOfStream == false)
+            using (System.IO.StreamReader myFile = new System.IO.StreamReader(path))
             {
-                file_text = myFile.ReadLine();
-                if (String.IsNullOrWhiteSpace(file_text))
-                    continue;
+                // Scrapping the first line as it holds no interest (just the movie id, which we already have)
+                myFile.ReadLine();
 
-                content = file_text.Split(',');
+                while (myFile.EndOfStream == false)
+                {
+                    file_text = myFile.ReadLine();
+                    if (String.IsNullOrWhiteSpace(file_text))
+                        continue;
 
-                u = new User(Convert.ToInt32(content[0]), users.Count);
-                u.ID = AddUser(users, u);
+                    content = file_text.Split(',');
+                    int netflixID = Convert.ToInt32(content[0]);
 
-                new_movie.Add(u, Convert.ToInt32(content[1]));
+                    int user;
+                    if (!users.TryGetValue(netflixID, out user))
+                    {
+                        user = users.Count;
+                        users.Add(netflixID, user);
+                    }
+
+                    new_movie.Add(user, Convert.ToInt32(content[1]));
+                }
             }
-            myFile.Close();
 
             return new_movie;
         }

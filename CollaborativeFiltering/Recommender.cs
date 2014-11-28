@@ -29,7 +29,7 @@ namespace CollaborativeFiltering
             this.lambda = lambda;
         }
 
-        public void Learn(Dictionary<User, double>[] trainingData, int userCount)
+        public void Learn(Dictionary<int, double>[] trainingData, int userCount)
         {
             movieCount = trainingData.Length;
             this.userCount = userCount;
@@ -59,9 +59,9 @@ namespace CollaborativeFiltering
 
             for (int i = 0; i < movieCount; i++)
             {
-                foreach (User user in trainingData[i].Keys)
+                foreach (int user in trainingData[i].Keys)
                 {
-                    error += Math.Pow((trainingData[i][user] - KSum(user.ID, i)), 2);
+                    error += Math.Pow((trainingData[i][user] - KSum(user, i)), 2);
                 }
             }
 
@@ -72,27 +72,27 @@ namespace CollaborativeFiltering
 
                 for (int i = 0; i < movieCount; i++)
                 {
-                    foreach (User u in trainingData[i].Keys)
+                    foreach (int u in trainingData[i].Keys)
                     {
-                        error += Math.Pow((trainingData[i][u] - KSum(u.ID, i)), 2);
+                        error += Math.Pow((trainingData[i][u] - KSum(u, i)), 2);
                     }
                 }
 
                 int movieID = random.Next(movieCount);
-                User user = trainingData[movieID].Keys.ElementAt(random.Next(trainingData[movieID].Count));
+                int user = trainingData[movieID].Keys.ElementAt(random.Next(trainingData[movieID].Count));
 
                 double[] tempAData = new double[featureCount];
                 double[] tempBData = new double[featureCount];
 
                 for (int k = 0; k < featureCount; k++)
                 {
-                    tempAData[k] = (((1 - lambda) * aMatrix[user.ID, k]) + (ni * bMatrix[k, movieID] * (trainingData[movieID][user] - KSum(user.ID, movieID))));
-                    tempBData[k] = (((1 - lambda) * bMatrix[k, movieID]) + (ni * aMatrix[user.ID, k] * (trainingData[movieID][user] - KSum(user.ID, movieID))));
+                    tempAData[k] = (((1 - lambda) * aMatrix[user, k]) + (ni * bMatrix[k, movieID] * (trainingData[movieID][user] - KSum(user, movieID))));
+                    tempBData[k] = (((1 - lambda) * bMatrix[k, movieID]) + (ni * aMatrix[user, k] * (trainingData[movieID][user] - KSum(user, movieID))));
                 }
 
                 for (int k = 0; k < featureCount; k++)
                 {
-                    aMatrix[user.ID, k] = tempAData[k];
+                    aMatrix[user, k] = tempAData[k];
                     bMatrix[k, movieID] = tempBData[k];
                 }
             }
